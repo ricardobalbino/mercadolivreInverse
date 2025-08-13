@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  role      String    @default("BUYER") // valores possíveis: BUYER, SELLER
+  city      String
+  rating    Float     @default(0)
+  requests  Request[] @relation("BuyerRequests")
+  offers    Offer[]
+  createdAt DateTime  @default(now())
+}
+
+model Request {
+  id              String   @id @default(cuid())
+  title           String
+  category        String
+  description     String
+  maxPrice        Int
+  radiusKm        Int
+  city            String
+  status          String   @default("OPEN") // valores possíveis: OPEN, ACCEPTED, CLOSED
+  buyer           User     @relation("BuyerRequests", fields: [buyerId], references: [id])
+  buyerId         String
+  acceptedOfferId String?
+  offers          Offer[]
+  createdAt       DateTime @default(now())
+}
+
+model Offer {
+  id        String   @id @default(cuid())
+  price     Int
+  condition String
+  message   String
+  etaDays   Int
+  seller    User     @relation(fields: [sellerId], references: [id])
+  sellerId  String
+  request   Request  @relation(fields: [requestId], references: [id])
+  requestId String
+  createdAt DateTime @default(now())
+}
